@@ -1,47 +1,34 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-const keyword = '';
 
-async function scrapeText(url) {
+async function scrapeText(url, keyword) {
   try {
-    const userAgent =
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+    const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
 
     const response = await axios.get(url, {
       headers: {
-        'User-Agent': userAgent,
-      },
+        'User-Agent': userAgent
+      }
     });
 
     const $ = cheerio.load(response.data);
 
-    const elements = $('body')
-      .find('*')
-      .filter(function () {
-        return $(this).text().includes(keyword);
-      })
-      .not('script, style') // Exclude script and style elements
-      .not('[aria-hidden="true"]') // Exclude elements with aria-hidden="true"
-      .not(function () {
-        // Exclude elements with specific classes or IDs
-        return (
-          $(this).hasClass('ad') || $(this).hasClass('advertisement') || $(this).attr('id') === 'ad-container'
-        );
-      });
+    const elements = $('body').find('*').filter(function () {
+      return $(this).text().includes(keyword);
+    });
 
     let extractedText = '';
 
     elements.each(function () {
-      const text = $(this)
-        .clone()
-        .children()
-        .remove()
-        .end()
-        .text()
-        .trim();
+      const text = $(this).clone()    // Clone the element to avoid modifying the original HTML
+        .children()                   // Get only the child elements
+        .remove()                     // Remove child elements (e.g., scripts, styles)
+        .end()                        // Return to the original element
+        .text()                       // Get the remaining text
+        .trim();                      // Trim any leading/trailing whitespace
 
-      extractedText += text + '\n';
+      extractedText += text + '\n';   // Append the extracted text to the result, separated by a newline
     });
 
     console.log(extractedText);
@@ -51,5 +38,7 @@ async function scrapeText(url) {
 }
 
 // Usage example:
-const url = 'https://ca.finance.yahoo.com/news/air-canada-rejects-passenger-compensation-150639707.html';
-scrapeText(url);
+const url = 'https://ca.finance.yahoo.com/news/burger-king-claps-back-mcdonalds-104700963.html'; // Replace with the URL you want to scrape
+const keyword = 'GPT'
+
+scrapeText(url, keyword);
