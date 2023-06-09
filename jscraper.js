@@ -1,34 +1,41 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-
-async function scrapeText(url, keyword) {
+async function scrapeText(url, keyword, depth) {
   try {
-    const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+    const userAgent =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
 
     const response = await axios.get(url, {
       headers: {
-        'User-Agent': userAgent
-      }
+        'User-Agent': userAgent,
+      },
     });
 
     const $ = cheerio.load(response.data);
 
-    const elements = $('body').find('*').filter(function () {
-      return $(this).text().includes(keyword);
-    });
+    const elements = $('body')
+      .find('*')
+      .filter(function () {
+        return $(this).text().includes(keyword) && !$(this).is('script');
+      });
 
     let extractedText = '';
 
     elements.each(function () {
-      const text = $(this).clone()    // Clone the element to avoid modifying the original HTML
-        .children()                   // Get only the child elements
-        .remove()                     // Remove child elements (e.g., scripts, styles)
-        .end()                        // Return to the original element
-        .text()                       // Get the remaining text
-        .trim();                      // Trim any leading/trailing whitespace
+      const text = $(this)
+        .clone()
+        .children()
+        .remove()
+        .end()
+        .text()
+        .trim();
 
-      extractedText += text + '\n';   // Append the extracted text to the result, separated by a newline
+        if (lineValid(text, depth)) {
+          extractedText += '' + (text) + '' + '\n';
+        }
+
+
     });
 
     console.log(extractedText);
@@ -37,8 +44,24 @@ async function scrapeText(url, keyword) {
   }
 }
 
-// Usage example:
-const url = 'https://ca.finance.yahoo.com/news/burger-king-claps-back-mcdonalds-104700963.html'; // Replace with the URL you want to scrape
-const keyword = 'GPT'
+function lineValid(text, depth){
+    if (
+    text.includes("<") || 
+    text.includes(">") || 
+    text.includes("{") || 
+    text.includes("}") || 
+    text.length < depth) {
+        return false;
+    }
+     else {
+        return true;
+    }
 
-scrapeText(url, keyword);
+}
+
+// Usage example:
+const url =
+  'https://en.wikipedia.org/wiki/Bosnia_and_Herzegovina'; // Replace with the URL you want to scrape
+const keyword = '';
+
+scrapeText(url, keyword, 100);
