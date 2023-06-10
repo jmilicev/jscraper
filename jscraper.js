@@ -2,6 +2,9 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 async function scrapeText(url, keyword, depth) {
+
+  let significantText = [];
+
   try {
     const userAgent =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
@@ -32,19 +35,19 @@ async function scrapeText(url, keyword, depth) {
         .trim();
 
         if (lineValid(text, depth)) {
-          extractedText += '' + (text) + '' + '\n';
+          significantText.push(text)
         }
 
 
     });
-
-    console.log(extractedText);
+    return significantText;
   } catch (error) {
     console.error('Error:', error);
   }
 }
 
 function lineValid(text, depth){
+    //criteria for ignoring the content of a string
     if (
     text.includes("<") || 
     text.includes(">") || 
@@ -59,9 +62,69 @@ function lineValid(text, depth){
 
 }
 
-// Usage example:
-const url =
-  'https://en.wikipedia.org/wiki/Bosnia_and_Herzegovina'; // Replace with the URL you want to scrape
-const keyword = '';
+//URL PORTION
+async function scrapeURLS(url, keyword) {
+  let foundURLS = [];
+  try {
+    const userAgent =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
 
-scrapeText(url, keyword, 100);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': userAgent,
+      },
+    });
+
+    const $ = cheerio.load(response.data);
+    const elements = $('body')
+      .find('*')
+      .filter(function () {
+        return $(this).text().includes(keyword) && !$(this).is('script');
+      });
+
+    let extractedText = '';
+
+    elements.each(function () {
+      const text = $(this)
+        .clone()
+        .children()
+        .remove()
+        .end()
+        .prop('outerHTML');
+        
+        if(
+          text.length > 0 &&
+          text.includes("<a href=\"http")
+          ) {
+            const regex = /href="([^"]*)"/;
+            const match = text.match(regex);
+            const link = match ? match[1] : null;
+            foundURLS.push(link)
+          }
+    });
+
+    return foundURLS;
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+
+async function controller(keyword, depth){
+
+  const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
+  foundURLS = await scrapeURLS(googleScrape, '')
+
+  console.log(foundURLS)
+
+  let significantText = [];
+  foundURLS.forEach(async function(currentURL) {
+    significantText = await scrapeText(currentURL, '', depth);
+    console.log(significantText)
+  });
+
+}
+
+// Usage example:
+
+controller('what is the best begginer motorcycle',500)
