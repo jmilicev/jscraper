@@ -64,6 +64,7 @@ function lineValid(text, depth){
 
 //URL PORTION
 async function scrapeURLS(url, keyword) {
+
   let foundURLS = [];
   try {
     const userAgent =
@@ -110,21 +111,30 @@ async function scrapeURLS(url, keyword) {
 }
 
 
-async function controller(keyword, depth){
+async function controller(keyword, depth, maxURLcount){
 
   const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
-  foundURLS = await scrapeURLS(googleScrape, '')
+  foundURLS = await scrapeURLS(googleScrape, '');
 
-  console.log(foundURLS)
+  console.log(foundURLS);
 
   let significantText = [];
+  scrapedURLcount = 0;
   foundURLS.forEach(async function(currentURL) {
-    significantText = await scrapeText(currentURL, '', depth);
-    console.log(significantText)
+
+    if(scrapedURLcount < maxURLcount){
+      significantText = await scrapeText(currentURL, '', depth);
+      if(significantText.length > 0){
+        console.log(significantText);
+      }
+    }else{
+
+    }
+    scrapedURLcount++;
   });
 
 }
 
 // Usage example:
 
-controller('what is the best begginer motorcycle',500)
+controller('what is the fastest motorcycle in 2023',500,1)
