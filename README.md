@@ -1,5 +1,3 @@
-Certainly! Here's an example README file for the "jscraper.js" module:
-
 # jscraper.js
 
 jscraper is a JavaScript module that allows you to scrape significant text from web pages based on specific keywords. It utilizes the axios library to make HTTP requests and the cheerio library for web scraping.
