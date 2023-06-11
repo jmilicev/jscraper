@@ -80,6 +80,4 @@ If you have any questions, suggestions, or need assistance, feel free to contact
 
 ## Disclaimer
 
-JScraper is a tool designed for legal and ethical
-
- web scraping. However, it's your responsibility to ensure that you use it in compliance with the target website's terms of service, as well as local, national, and international laws and regulations. The authors of JScraper are not liable for any misuse or legal consequences caused by the usage of this library.
+JScraper is a tool designed for legal and ethical web scraping. However, it's your responsibility to ensure that you use it in compliance with the target website's terms of service, as well as local, national, and international laws and regulations. The authors of JScraper are not liable for any misuse or legal consequences caused by the usage of this library.
