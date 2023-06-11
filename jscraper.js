@@ -1,10 +1,9 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-async function scrapeText(url, keyword, depth) {
+async function findText(url, keyword, depth) {
 
   let significantText = [];
-
   try {
     const userAgent =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
@@ -16,7 +15,6 @@ async function scrapeText(url, keyword, depth) {
     });
 
     const $ = cheerio.load(response.data);
-
     const elements = $('body')
       .find('*')
       .filter(function () {
@@ -63,8 +61,7 @@ function lineValid(text, depth){
 }
 
 //URL PORTION
-async function scrapeURLS(url, keyword) {
-
+async function findURLS(url, keyword) {
   let foundURLS = [];
   try {
     const userAgent =
@@ -95,7 +92,8 @@ async function scrapeURLS(url, keyword) {
         
         if(
           text.length > 0 &&
-          text.includes("<a href=\"http")
+          text.includes("<a href=\"http") &&
+          !text.includes("google.com")
           ) {
             const regex = /href="([^"]*)"/;
             const match = text.match(regex);
@@ -110,31 +108,34 @@ async function scrapeURLS(url, keyword) {
   }
 }
 
-
-async function controller(keyword, depth, maxURLcount){
-
-  const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
-  foundURLS = await scrapeURLS(googleScrape, '');
-
-  console.log(foundURLS);
+async function scrape(searchKey, filter, depth, maxURLcount) {
+  const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
+  let foundURLS = await findURLS(googleScrape, '');
 
   let significantText = [];
-  scrapedURLcount = 0;
-  foundURLS.forEach(async function(currentURL) {
+  let foundText = [];
+  let usedURLS = [];
 
-    if(scrapedURLcount < maxURLcount){
-      significantText = await scrapeText(currentURL, '', depth);
-      if(significantText.length > 0){
-        console.log(significantText);
-      }
-    }else{
+  let usedCounter = 0;
 
+  for (let i = 0; i < foundURLS.length && usedCounter < maxURLcount; i++) {
+    let currentURL = foundURLS[i];
+    significantText = await findText(currentURL, filter, depth);
+    if (significantText.length > 0) {
+      foundText.push(significantText);
+      usedURLS.push(currentURL);
+      usedCounter++;
     }
-    scrapedURLcount++;
-  });
+  }
 
+  return { usedURLS, foundText };
 }
+
 
 // Usage example:
 
-controller('what is the fastest motorcycle in 2023',500,1)
+(async () => {
+  const { usedURLS, foundText } = await scrape('what is the fastest motorcycle in 2023', '', 500, 4);
+  console.log("TEXT:", foundText);
+  console.log("SOURCES:", usedURLS);
+})();
