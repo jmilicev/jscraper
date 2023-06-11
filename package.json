@@ -1,6 +1,6 @@
 {
   "name": "jscraper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A powerful website scraper used for training language models.",
   "main": "jscraper.js",
   "scripts": {
