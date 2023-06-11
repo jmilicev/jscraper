@@ -58,13 +58,16 @@ function lineValid(text, depth){
 }
  
 //URL PORTION
-async function findURLS(url) {
+async function findURLS(searchKey) {
+
+  const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
+
   let foundURLS = [];
   try {
     const userAgent =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
 
-    const response = await axios.get(url, {
+    const response = await axios.get(googleScrape, {
       headers: {
         'User-Agent': userAgent,
       },
@@ -106,9 +109,7 @@ async function findURLS(url) {
 }
 
 async function scrape(searchKey, filters, depth, maxURLcount) {
-  const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
-  let foundURLS = await findURLS(googleScrape);
-
+  let foundURLS = await findURLS(searchKey);
   let significantText = [];
   let foundText = [];
   let usedURLS = [];

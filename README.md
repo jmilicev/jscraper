@@ -54,7 +54,7 @@ The `findText` function retrieves significant text from a specific URL based on 
 
 The `findURLS` function retrieves a list of URLs from a specific URL based on certain criteria. It returns an array of strings representing the URLs found on the web page.
 
-- `url` (string): The URL of the web page to search for other URLs.
+- `searchKey` (string): The keyword to find URLs for.
 
 ## Disclaimer
 
