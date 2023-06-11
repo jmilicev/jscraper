@@ -1,8 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-async function findText(url, keyword, depth) {
-
+async function findText(url, keywords, depth) {
   let significantText = [];
   try {
     const userAgent =
@@ -18,10 +17,9 @@ async function findText(url, keyword, depth) {
     const elements = $('body')
       .find('*')
       .filter(function () {
-        return $(this).text().toLowerCase().includes(keyword.toLowerCase()) && !$(this).is('script');
-      })
-
-    let extractedText = '';
+        const elementText = $(this).text().toLowerCase();
+        return keywords.every(keyword => elementText.includes(keyword.toLowerCase())) && !$(this).is('script');
+      });
 
     elements.each(function () {
       const text = $(this)
@@ -32,17 +30,16 @@ async function findText(url, keyword, depth) {
         .text()
         .trim();
 
-        if (lineValid(text, depth)) {
-          significantText.push(text)
-        }
-
-
+      if (lineValid(text, depth)) {
+        significantText.push(text);
+      }
     });
     return significantText;
   } catch (error) {
     console.error('Error:', error);
   }
 }
+
 
 function lineValid(text, depth){
     //criteria for ignoring the content of a string
@@ -61,7 +58,7 @@ function lineValid(text, depth){
 }
  
 //URL PORTION
-async function findURLS(url, keyword) {
+async function findURLS(url) {
   let foundURLS = [];
   try {
     const userAgent =
@@ -77,7 +74,7 @@ async function findURLS(url, keyword) {
     const elements = $('body')
       .find('*')
       .filter(function () {
-        return $(this).text().includes(keyword) && !$(this).is('script');
+        return !$(this).is('script');
       });
 
     let extractedText = '';
@@ -108,9 +105,9 @@ async function findURLS(url, keyword) {
   }
 }
 
-async function scrape(searchKey, filter, depth, maxURLcount) {
+async function scrape(searchKey, filters, depth, maxURLcount) {
   const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
-  let foundURLS = await findURLS(googleScrape, '');
+  let foundURLS = await findURLS(googleScrape);
 
   let significantText = [];
   let foundText = [];
@@ -120,7 +117,7 @@ async function scrape(searchKey, filter, depth, maxURLcount) {
 
   for (let i = 0; i < foundURLS.length && usedCounter < maxURLcount; i++) {
     let currentURL = foundURLS[i];
-    significantText = await findText(currentURL, filter, depth);
+    significantText = await findText(currentURL, filters, depth);
     if (significantText.length > 0) {
       foundText.push(significantText);
       usedURLS.push(currentURL);
@@ -135,7 +132,7 @@ async function scrape(searchKey, filter, depth, maxURLcount) {
 // Usage example:
 
 (async () => {
-  const { usedURLS, foundText } = await scrape('what is the fastest motorcycle in 2023', 'suspension', 500, 10);
+  const { usedURLS, foundText } = await scrape('best begginer motorcycles', ['top speed'], 100, 10);
   console.log("TEXT:", foundText);
   console.log("SOURCES:", usedURLS);
 })();
