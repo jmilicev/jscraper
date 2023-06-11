@@ -128,11 +128,8 @@ async function scrape(searchKey, filters, depth, maxURLcount) {
   return { usedURLS, foundText };
 }
 
-
-// Usage example:
-
-(async () => {
-  const { usedURLS, foundText } = await scrape('best begginer motorcycles', ['top speed'], 100, 10);
-  console.log("TEXT:", foundText);
-  console.log("SOURCES:", usedURLS);
-})();
+module.exports = {
+  findText,
+  findURLS,
+  scrape
+}
