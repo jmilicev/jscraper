@@ -1,0 +1,16 @@
+{
+  "name": "jscraper",
+  "version": "1.0.0",
+  "description": "A powerful website scraper used for training language models.",
+  "main": "jscraper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "website",
+    "scraper",
+    "searcher"
+  ],
+  "author": "Jovan Milicev",
+  "license": "ISC"
+}
