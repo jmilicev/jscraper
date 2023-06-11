@@ -58,16 +58,26 @@ function lineValid(text, depth){
 }
  
 //URL PORTION
-async function findURLS(searchKey) {
+async function findURLS(searchKey, engine) {
 
-  const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
+  //const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
+  //const bingScrape = `https://www.bing.com/search?q=${encodeURIComponent(searchKey)}`;
+
+  if(engine == "bing"){
+    url = `https://www.bing.com/search?q=${encodeURIComponent(searchKey)}`;
+  }else{
+    //default to google 
+    url = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
+  }
+
+console.log(url)
 
   let foundURLS = [];
   try {
     const userAgent =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
 
-    const response = await axios.get(googleScrape, {
+    const response = await axios.get(url, {
       headers: {
         'User-Agent': userAgent,
       },
@@ -89,17 +99,19 @@ async function findURLS(searchKey) {
         .remove()
         .end()
         .prop('outerHTML');
-        
-        if(
+
+        if (
           text.length > 0 &&
-          text.includes("<a href=\"http") &&
-          !text.includes("google.com")
-          ) {
-            const regex = /href="([^"]*)"/;
+          text.includes("href=\"https") &&
+          !text.includes("google.com") 
+        ) {
+
+            const regex = /href="(https?[^"]*)"/;
             const match = text.match(regex);
             const link = match ? match[1] : null;
-            foundURLS.push(link)
-          }
+            foundURLS.push(link);
+          
+        }
     });
 
     return foundURLS;
@@ -108,12 +120,11 @@ async function findURLS(searchKey) {
   }
 }
 
-async function scrape(searchKey, filters, depth, maxURLcount) {
-  let foundURLS = await findURLS(searchKey);
+async function scrape(searchKey, engine, filters, depth, maxURLcount) {
+  let foundURLS = await findURLS(searchKey, engine);
   let significantText = [];
   let foundText = [];
   let usedURLS = [];
-
   let usedCounter = 0;
 
   for (let i = 0; i < foundURLS.length && usedCounter < maxURLcount; i++) {
