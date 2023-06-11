@@ -18,7 +18,10 @@ async function findText(url, keywords, depth) {
       .find('*')
       .filter(function () {
         const elementText = $(this).text().toLowerCase();
-        return keywords.every(keyword => elementText.includes(keyword.toLowerCase())) && !$(this).is('script');
+        return (
+          keywords.every(keyword => elementText.includes(keyword.toLowerCase())) &&
+          !$(this).is('script')
+        );
       });
 
     elements.each(function () {
@@ -40,85 +43,87 @@ async function findText(url, keywords, depth) {
   }
 }
 
-
-function lineValid(text, depth){
-    //criteria for ignoring the content of a string
-    if (
-    text.includes("<") || 
-    text.includes(">") || 
-    text.includes("{") || 
-    text.includes("}") || 
-    text.length < depth) {
-        return false;
-    }
-     else {
-        return true;
-    }
-
+function lineValid(text, depth) {
+  // Criteria for ignoring the content of a string
+  if (
+    text.includes("<") ||
+    text.includes(">") ||
+    text.includes("{") ||
+    text.includes("}") ||
+    text.length < depth
+  ) {
+    return false;
+  } else {
+    return true;
+  }
 }
- 
-//URL PORTION
+
 async function findURLS(searchKey, engine) {
+  let foundURLS = [];
 
-  //const googleScrape = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
-  //const bingScrape = `https://www.bing.com/search?q=${encodeURIComponent(searchKey)}`;
-
-  if(engine == "bing"){
+  if (engine === "bing") {
     url = `https://www.bing.com/search?q=${encodeURIComponent(searchKey)}`;
-  }else{
-    //default to google 
+  } else if (engine === "merge") {
+    let url1 = await findURLS(searchKey, 'google');
+    let url2 = await findURLS(searchKey, 'bing');
+
+    /*
+    console.log("GOOGLE FOUND: ")
+    console.log(url1)
+    console.log("BING FOUND: ")
+    console.log(url2)
+    */
+
+    foundURLS = Array.from(new Set(url1.concat(url2)));
+    return foundURLS;
+  } else {
+    // Default to Google
     url = `https://www.google.com/search?q=${encodeURIComponent(searchKey)}`;
   }
 
-console.log(url)
+  if (engine !== "merge") {
+    try {
+      const userAgent =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
 
-  let foundURLS = [];
-  try {
-    const userAgent =
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
-
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': userAgent,
-      },
-    });
-
-    const $ = cheerio.load(response.data);
-    const elements = $('body')
-      .find('*')
-      .filter(function () {
-        return !$(this).is('script');
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': userAgent,
+        },
       });
 
-    let extractedText = '';
+      const $ = cheerio.load(response.data);
+      const elements = $('body')
+        .find('*')
+        .filter(function () {
+          return !$(this).is('script');
+        });
 
-    elements.each(function () {
-      const text = $(this)
-        .clone()
-        .children()
-        .remove()
-        .end()
-        .prop('outerHTML');
+      elements.each(function () {
+        const text = $(this).prop('outerHTML');
 
         if (
           text.length > 0 &&
           text.includes("href=\"https") &&
-          !text.includes("google.com")
+          !text.includes("google.com") &&
+          !text.includes("bing.com") &&
+          !text.includes("go.microsoft.com") &&
+          !text.includes("support.microsoft.com")
         ) {
           const regex = /href="(https?[^"]*)"/;
           const match = text.match(regex);
           const link = match ? match[1] : null;
-          
+
           if (link && !foundURLS.includes(link)) {
             foundURLS.push(link);
           }
         }
-        
-    });
+      });
 
-    return foundURLS;
-  } catch (error) {
-    console.error('Error:', error);
+      return foundURLS;
+    } catch (error) {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -145,5 +150,5 @@ async function scrape(searchKey, engine, filters, depth, maxURLcount) {
 module.exports = {
   findText,
   findURLS,
-  scrape
-}
+  scrape,
+};
