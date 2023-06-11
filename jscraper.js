@@ -103,15 +103,17 @@ console.log(url)
         if (
           text.length > 0 &&
           text.includes("href=\"https") &&
-          !text.includes("google.com") 
+          !text.includes("google.com")
         ) {
-
-            const regex = /href="(https?[^"]*)"/;
-            const match = text.match(regex);
-            const link = match ? match[1] : null;
-            foundURLS.push(link);
+          const regex = /href="(https?[^"]*)"/;
+          const match = text.match(regex);
+          const link = match ? match[1] : null;
           
+          if (link && !foundURLS.includes(link)) {
+            foundURLS.push(link);
+          }
         }
+        
     });
 
     return foundURLS;

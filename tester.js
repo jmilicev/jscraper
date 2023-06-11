@@ -4,8 +4,8 @@ const scraper = require('./jscraper.js');
 
 (async () => {
     const { usedURLS, foundText } = await scraper.scrape('best begginer motorcycles',
-     'bing',
-     [''], 
+     'google',
+     ['illegal'], 
      100, 
      10);
 
