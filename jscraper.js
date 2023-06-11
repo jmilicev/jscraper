@@ -18,8 +18,8 @@ async function findText(url, keyword, depth) {
     const elements = $('body')
       .find('*')
       .filter(function () {
-        return $(this).text().includes(keyword) && !$(this).is('script');
-      });
+        return $(this).text().toLowerCase().includes(keyword.toLowerCase()) && !$(this).is('script');
+      })
 
     let extractedText = '';
 
@@ -59,7 +59,7 @@ function lineValid(text, depth){
     }
 
 }
-
+ 
 //URL PORTION
 async function findURLS(url, keyword) {
   let foundURLS = [];
@@ -135,7 +135,7 @@ async function scrape(searchKey, filter, depth, maxURLcount) {
 // Usage example:
 
 (async () => {
-  const { usedURLS, foundText } = await scrape('what is the fastest motorcycle in 2023', '', 500, 4);
+  const { usedURLS, foundText } = await scrape('what is the fastest motorcycle in 2023', 'suspension', 500, 10);
   console.log("TEXT:", foundText);
   console.log("SOURCES:", usedURLS);
 })();
