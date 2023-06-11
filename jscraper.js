@@ -97,8 +97,9 @@ async function findText(url, keywords, depth) {
     });
     return significantText;
   } catch (error) {
-    console.error('HTTP ERROR, SCRAPER DENIED | WEBSITE AVOIDED');
-    return [];
+    console.error('HTTP ERROR | SCRAPER DENIED, WEBSITE AVOIDED: '+url);
+    errorcaught = true;
+    return [''];
   }
 }
 
@@ -188,15 +189,21 @@ async function scrape(searchKey, engine, filters, depth, maxURLcount) {
   for (let i = 0; i < foundURLs.length && usedCounter < maxURLcount; i++) {
     let currentURL = foundURLs[i];
     significantText = await findText(currentURL, filters, depth);
+
     if (significantText.length > 0) {
-      foundText.push(significantText);
+      foundText.push(significantText.filter(text => text !== ''));
       usedURLs.push(currentURL);
       usedCounter++;
     }
   }
+
+  foundText = foundText.filter(textArray => textArray.length > 0); // Remove empty arrays
+
   console.log(usedURLs);
   return { usedURLs, foundText };
 }
+
+
 
 module.exports = {
   findText,

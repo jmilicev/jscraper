@@ -15,10 +15,10 @@ const scraper = require('./jscraper.js');
     console.log(text)
     */
 
-    const { usedURLs, foundText } = await scraper.scrape('largest buildings in the world',
+    const { usedURLs, foundText } = await scraper.scrape('keyword',
     'merge',
-    ['khalifa'],
-    300,
+    ['search'],
+    0,
     15);
   
   console.log("TEXT:", foundText);
